@@ -1,55 +1,121 @@
-import { useRouter } from 'expo-router'; // ✅ 추가
-import React from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 const SignupScreen = () => {
-  const router = useRouter(); // ✅ 추가
+  const router = useRouter();
+
+  const [username, setUsername] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState('');
+
+  const handleSignup = async () => {
+    // ✅ 모든 필드 유효성 검사
+    if (!username || !nickname || !password || !confirmPassword || !email) {
+      Alert.alert('입력 오류', '모든 항목을 입력해주세요.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('오류', '비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://172.28.8.74:8080/api/users/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          nickname,
+          password,
+          email,
+        }),
+      });
+
+      if (response.ok) {
+        Alert.alert('성공', '회원가입이 완료되었습니다.', [
+          { text: '확인', onPress: () => router.push('/SecondScreen') },
+        ]);
+      } else {
+        const data = await response.json();
+        Alert.alert('회원가입 실패', data.message || '오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('네트워크 오류', '서버와 연결할 수 없습니다.');
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>회원가입</Text>
 
-      {/* 아이디 */}
       <View style={styles.inputRow}>
-        <TextInput style={[styles.input, { flex: 1 }]} placeholder="아이디" placeholderTextColor="rgba(0, 0, 0, 0.27)" />
+        <TextInput
+          style={[styles.input, { flex: 1 }]}
+          placeholder="아이디"
+          placeholderTextColor="rgba(0, 0, 0, 0.27)"
+          value={username}
+          onChangeText={setUsername}
+        />
         <TouchableOpacity style={styles.checkButton}>
           <Text style={styles.checkButtonText}>중복확인</Text>
         </TouchableOpacity>
       </View>
 
-      {/* 닉네임 */}
-      <TextInput style={styles.input} placeholder="닉네임" placeholderTextColor="rgba(0, 0, 0, 0.27)" />
+      <TextInput
+        style={styles.input}
+        placeholder="이름"
+        placeholderTextColor="rgba(0, 0, 0, 0.27)"
+        value={nickname}
+        onChangeText={setNickname}
+      />
 
-      {/* 비밀번호 */}
       <TextInput
         style={styles.input}
         placeholder="비밀번호"
         secureTextEntry
         placeholderTextColor="rgba(0, 0, 0, 0.27)"
+        value={password}
+        onChangeText={setPassword}
       />
 
-      {/* 비밀번호 확인 */}
       <TextInput
         style={styles.input}
         placeholder="비밀번호 확인"
         secureTextEntry
         placeholderTextColor="rgba(0, 0, 0, 0.27)"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
       />
 
-      {/* 이메일 */}
-      <TextInput style={styles.input} placeholder="이메일" placeholderTextColor="rgba(0, 0, 0, 0.27)" />
+      <TextInput
+        style={styles.input}
+        placeholder="이메일"
+        placeholderTextColor="rgba(0, 0, 0, 0.27)"
+        value={email}
+        onChangeText={setEmail}
+      />
 
-      {/* 회원가입 버튼 */}
-      <TouchableOpacity
-        style={styles.signupButton}
-        onPress={() => router.push('/UmfrageHome')} // ✅ 경로에 맞게 수정
-      >
+      <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
         <Text style={styles.signupButtonText}>회원가입</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
