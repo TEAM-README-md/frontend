@@ -16,7 +16,7 @@ const YourComponent = () => {
       {/* 시작하기 버튼 전체 터치 영역 */}
       <TouchableOpacity
         style={styles.startButton}
-        onPress={() => router.push('/SecondScreen')} // 여기를 고쳤습니다!
+        onPress={() => router.push('/LoginScreen')} // 여기를 고쳤습니다!
       >
         <Text style={styles.startText}>시작하기</Text>
       </TouchableOpacity>

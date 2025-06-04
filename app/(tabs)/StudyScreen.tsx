@@ -76,7 +76,7 @@ export default function StudyScreen() {
 
   const handleNext = () => {
     if (selectedIndexes.length > 0) {
-      router.push("/");
+      router.push("/TimeScreen");
     } else {
       setShowWarning(true);
     }

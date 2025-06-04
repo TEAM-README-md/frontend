@@ -9,7 +9,15 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "platforms": [
+        "ios",
+        "android",
+        "web"
+      ],
+      "plugins": [
+        "@react-native-async-storage/async-storage"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -34,7 +42,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

@@ -32,7 +32,7 @@ const SignupScreen = () => {
     }
 
     try {
-      const response = await fetch('http://172.28.8.74:8080/api/users/signup', {
+      const response = await fetch('http://192.168.36.56:8080/api/users/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,7 +47,7 @@ const SignupScreen = () => {
 
       if (response.ok) {
         Alert.alert('성공', '회원가입이 완료되었습니다.', [
-          { text: '확인', onPress: () => router.push('/SecondScreen') },
+          { text: '확인', onPress: () => router.push('/LoginScreen') },
         ]);
       } else {
         const data = await response.json();
