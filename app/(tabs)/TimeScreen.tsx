@@ -1,5 +1,3 @@
-// app/TimeScreen.tsx
-
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -91,14 +89,14 @@ const styles = StyleSheet.create({
   dotsContainer: {
     position: "absolute",
     top: 62,
-    left: 30,
+    left: 32,
     flexDirection: "row",
-    gap: 8,
+    gap: 6,
   },
   dot: {
     width: 72,
     height: 20,
-    borderRadius: 10.76,
+    borderRadius: 10.7629,
     backgroundColor: "#0077FF",
   },
   inactiveDot: {

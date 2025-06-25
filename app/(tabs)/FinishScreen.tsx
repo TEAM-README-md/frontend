@@ -27,7 +27,7 @@ const FinishScreen = () => {
       </TouchableOpacity>
 
       {/* 시작하기 버튼 */}
-      <TouchableOpacity style={styles.startButton} onPress={() => router.push('/SurveyScreen')}>
+      <TouchableOpacity style={styles.startButton} onPress={() => router.push('/Home')}>
         <Text style={styles.startText}>시작하기</Text>
       </TouchableOpacity>
     </View>

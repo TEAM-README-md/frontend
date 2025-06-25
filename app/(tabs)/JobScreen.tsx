@@ -77,9 +77,9 @@ const styles = StyleSheet.create({
   dotsContainer: {
     position: "absolute",
     top: 62,
-    left: 30,
+    left: 32,
     flexDirection: "row",
-    gap: 8,
+    gap: 6,
   },
   dot: {
     width: 72,

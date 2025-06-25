@@ -43,7 +43,8 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
@@ -54,5 +55,8 @@
         "projectId": "f77aa716-a7db-40e0-a61f-410fea123429"
       }
     }
+  },
+  "locales": {
+    "ko": "./locales/ko.json"
   }
 }

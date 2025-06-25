@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
@@ -18,9 +19,9 @@ const SignupScreen = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false); // 추가
 
   const handleSignup = async () => {
-    // ✅ 모든 필드 유효성 검사
     if (!username || !nickname || !password || !confirmPassword || !email) {
       Alert.alert('입력 오류', '모든 항목을 입력해주세요.');
       return;
@@ -31,19 +32,24 @@ const SignupScreen = () => {
       return;
     }
 
+    setLoading(true); // 로딩 시작
+
     try {
-      const response = await fetch('http://192.168.36.56:8080/api/users/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username,
-          nickname,
-          password,
-          email,
-        }),
-      });
+      const response = await fetch(
+        'https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/users/signup',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username,
+            nickname,
+            password,
+            email,
+          }),
+        }
+      );
 
       if (response.ok) {
         Alert.alert('성공', '회원가입이 완료되었습니다.', [
@@ -56,6 +62,8 @@ const SignupScreen = () => {
     } catch (error) {
       console.error(error);
       Alert.alert('네트워크 오류', '서버와 연결할 수 없습니다.');
+    } finally {
+      setLoading(false); // 로딩 종료
     }
   };
 
@@ -70,8 +78,9 @@ const SignupScreen = () => {
           placeholderTextColor="rgba(0, 0, 0, 0.27)"
           value={username}
           onChangeText={setUsername}
+          editable={!loading}
         />
-        <TouchableOpacity style={styles.checkButton}>
+        <TouchableOpacity style={styles.checkButton} disabled={loading}>
           <Text style={styles.checkButtonText}>중복확인</Text>
         </TouchableOpacity>
       </View>
@@ -82,6 +91,7 @@ const SignupScreen = () => {
         placeholderTextColor="rgba(0, 0, 0, 0.27)"
         value={nickname}
         onChangeText={setNickname}
+        editable={!loading}
       />
 
       <TextInput
@@ -91,6 +101,7 @@ const SignupScreen = () => {
         placeholderTextColor="rgba(0, 0, 0, 0.27)"
         value={password}
         onChangeText={setPassword}
+        editable={!loading}
       />
 
       <TextInput
@@ -100,6 +111,7 @@ const SignupScreen = () => {
         placeholderTextColor="rgba(0, 0, 0, 0.27)"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
+        editable={!loading}
       />
 
       <TextInput
@@ -108,10 +120,19 @@ const SignupScreen = () => {
         placeholderTextColor="rgba(0, 0, 0, 0.27)"
         value={email}
         onChangeText={setEmail}
+        editable={!loading}
       />
 
-      <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
-        <Text style={styles.signupButtonText}>회원가입</Text>
+      <TouchableOpacity
+        style={[styles.signupButton, loading && { backgroundColor: '#A0A0A0' }]}
+        onPress={handleSignup}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <Text style={styles.signupButtonText}>회원가입</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );

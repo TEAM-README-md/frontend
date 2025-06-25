@@ -4,7 +4,16 @@ import axios from "axios"
 import { router } from "expo-router"
 import * as SecureStore from "expo-secure-store"
 import { useRef, useState } from "react"
-import { Alert, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native"
 
 const LoginScreen = () => {
   const inputRef1 = useRef<TextInput>(null)
@@ -14,26 +23,18 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  const API_BASE_URL = "http://192.168.36.56:8080"
+  const API_BASE_URL =
+    "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app"
 
-  // 안전한 토큰 저장 함수
   const saveTokenSafely = async (token: any): Promise<boolean> => {
     try {
-      if (!token) {
-        console.error("토큰이 없습니다")
+      if (!token) return false
+      const tokenString =
+        typeof token === "string" ? token : JSON.stringify(token)
+      if (!tokenString || tokenString === "undefined" || tokenString === "null")
         return false
-      }
-
-      // 토큰을 문자열로 변환
-      const tokenString = typeof token === "string" ? token : JSON.stringify(token)
-
-      if (!tokenString || tokenString === "undefined" || tokenString === "null") {
-        console.error("유효하지 않은 토큰:", tokenString)
-        return false
-      }
 
       await SecureStore.setItemAsync("jwt_token", tokenString)
-      console.log("토큰 저장 성공")
       return true
     } catch (error) {
       console.error("토큰 저장 실패:", error)
@@ -42,7 +43,6 @@ const LoginScreen = () => {
   }
 
   const handleLogin = async () => {
-    // 입력 검증
     if (!username.trim() || !password.trim()) {
       Alert.alert("입력 오류", "아이디와 비밀번호를 모두 입력해주세요.")
       return
@@ -51,55 +51,41 @@ const LoginScreen = () => {
     try {
       setIsLoading(true)
 
-      console.log("로그인 시도:", `${API_BASE_URL}/api/users/login`)
-
       const response = await axios.post(
         `${API_BASE_URL}/api/users/login`,
-        {
-          username,
-          password,
-        },
+        { username, password },
         {
           timeout: 10000,
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        },
+        }
       )
 
-      console.log("서버 응답:", response.status, response.data)
-
       if (response.status === 200 || response.status === 201) {
-        // 서버 응답에서 토큰 추출
-        const responseData = response.data
-        const token = responseData.token || responseData.accessToken || responseData.jwt
+        const token =
+          response.data.token ||
+          response.data.accessToken ||
+          response.data.jwt
 
         if (!token) {
-          console.error("토큰을 찾을 수 없음. 응답 데이터:", responseData)
           Alert.alert("오류", "서버에서 토큰을 받지 못했습니다.")
           return
         }
 
-        console.log("토큰 타입:", typeof token)
-        console.log("토큰 값:", token)
-
-        // 안전하게 토큰 저장
         const saveSuccess = await saveTokenSafely(token)
-
         if (saveSuccess) {
           Alert.alert("성공", "로그인 성공!", [
-  {
-    text: "확인",
-    onPress: () => {
-      // 입력 필드 초기화
-      setUsername("")
-      setPassword("")
-      // UmfrageHome으로 이동
-      router.push("/UmfrageHome")
-    },
-  },
-])
+            {
+              text: "확인",
+              onPress: () => {
+                setUsername("")
+                setPassword("")
+                router.push("/UmfrageHome")
+              },
+            },
+          ])
         } else {
           Alert.alert("오류", "토큰 저장에 실패했습니다.")
         }
@@ -107,17 +93,10 @@ const LoginScreen = () => {
         Alert.alert("실패", "로그인에 실패했습니다.")
       }
     } catch (error: any) {
-      console.error("로그인 실패:", error)
-
       let errorMessage = "로그인 요청 실패"
 
       if (error.response) {
-        // 서버가 응답했지만 오류 상태
         const status = error.response.status
-        const data = error.response.data
-
-        console.log("서버 오류 응답:", status, data)
-
         switch (status) {
           case 400:
             errorMessage = "잘못된 요청입니다. 입력 정보를 확인해주세요."
@@ -135,10 +114,10 @@ const LoginScreen = () => {
             errorMessage = "서버 내부 오류가 발생했습니다."
             break
           default:
-            errorMessage = data?.message || `서버 오류 (${status})`
+            errorMessage =
+              error.response.data?.message || `서버 오류 (${status})`
         }
       } else if (error.request) {
-        // 요청은 보냈지만 응답을 받지 못함
         errorMessage = "서버에서 응답이 없습니다. 네트워크 연결을 확인해주세요."
       } else if (error.code === "ECONNREFUSED") {
         errorMessage = "서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요."
@@ -154,7 +133,6 @@ const LoginScreen = () => {
     }
   }
 
-  // 저장된 토큰 확인 함수 (디버깅용)
   const checkStoredToken = async () => {
     try {
       const token = await SecureStore.getItemAsync("jwt_token")
@@ -173,12 +151,14 @@ const LoginScreen = () => {
     <View style={styles.container}>
       <Text style={styles.loginTitle}>로그인</Text>
       <View style={styles.lineTop} />
-
-      {/* 디버깅 정보 */}
       <Text style={styles.debugInfo}>API: {API_BASE_URL}</Text>
 
       <View style={styles.inputGroup}>
-        <TouchableOpacity activeOpacity={1} style={styles.inputBox} onPress={() => inputRef1.current?.focus()}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={styles.inputBox}
+          onPress={() => inputRef1.current?.focus()}
+        >
           <TextInput
             ref={inputRef1}
             style={styles.input}
@@ -194,7 +174,11 @@ const LoginScreen = () => {
       </View>
 
       <View style={styles.inputGroup2}>
-        <TouchableOpacity activeOpacity={1} style={styles.inputBox2} onPress={() => inputRef2.current?.focus()}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={styles.inputBox2}
+          onPress={() => inputRef2.current?.focus()}
+        >
           <TextInput
             ref={inputRef2}
             style={styles.input}
@@ -213,20 +197,32 @@ const LoginScreen = () => {
         onPress={handleLogin}
         disabled={isLoading}
       >
-        <Text style={styles.loginButtonText}>{isLoading ? "로그인 중..." : "로그인"}</Text>
+        {isLoading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.loginButtonText}>로그인</Text>
+        )}
       </TouchableOpacity>
 
-      {/* 디버깅 버튼 (개발 중에만 표시) */}
       {Platform.OS === "ios" || Platform.OS === "android"
         ? __DEV__ && (
-            <TouchableOpacity style={styles.debugButton} onPress={checkStoredToken} disabled={isLoading}>
+            <TouchableOpacity
+              style={styles.debugButton}
+              onPress={checkStoredToken}
+              disabled={isLoading}
+            >
               <Text style={styles.debugButtonText}>토큰 확인</Text>
             </TouchableOpacity>
           )
         : null}
 
-      <TouchableOpacity onPress={() => router.push("./Signup")} disabled={isLoading}>
-        <Text style={[styles.noAccount, isLoading && styles.disabledText]}>계정이 없으신가요?</Text>
+      <TouchableOpacity
+        onPress={() => router.push("./Signup")}
+        disabled={isLoading}
+      >
+        <Text style={[styles.noAccount, isLoading && styles.disabledText]}>
+          계정이 없으신가요?
+        </Text>
       </TouchableOpacity>
 
       <Text style={styles.findAccount}>아이디 / 비밀번호 찾기</Text>
@@ -251,7 +247,6 @@ const LoginScreen = () => {
     </View>
   )
 }
-
 const styles = StyleSheet.create({
   container: {
     position: "relative",
