@@ -11,7 +11,7 @@ const FinishScreen = () => {
     <View style={styles.container}>
       {/* 로고 이미지 */}
       <Image
-        source={require('../../assets/images/image_60.png')}
+        source={require('../../assets/images/image 68.png')}
         style={styles.image}
         resizeMode="contain"
       />
@@ -22,7 +22,7 @@ const FinishScreen = () => {
       </Text>
 
       {/* 이전 버튼 */}
-      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/JobScreen')}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/Submission')}>
         <Text style={styles.backText}>이전</Text>
       </TouchableOpacity>
 

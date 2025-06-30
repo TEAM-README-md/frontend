@@ -25,7 +25,7 @@ const UmfrageHome = () => {
       {/* 설문 버튼 */}
       <TouchableOpacity
         style={styles.button}
-        onPress={() => router.push('/SurveyScreen')}
+        onPress={() => router.push('/Company')}
       >
         <Text style={styles.buttonText}>설문하러 가기</Text>
       </TouchableOpacity>
