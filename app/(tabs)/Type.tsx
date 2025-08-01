@@ -1,9 +1,17 @@
-// 실행되는
-
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Dimensions,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+const { width, height } = Dimensions.get("window");
 
 export default function SpeakScreen() {
   const router = useRouter();
@@ -13,9 +21,7 @@ export default function SpeakScreen() {
   const [jwtToken, setJwtToken] = useState<string | null>(null);
 
   const options = ["신입", "경력", "인턴"];
-  const CURRENT_INDEX = 1; // 질문 순서 참고용 (필요시 사용)
 
-  // JWT 토큰 로딩
   useEffect(() => {
     const loadToken = async () => {
       try {
@@ -34,13 +40,11 @@ export default function SpeakScreen() {
     loadToken();
   }, []);
 
-  // 선택지 선택
   const handleSelect = (index: number) => {
     setSelectedLevel(index === selectedLevel ? null : index);
     setShowError(false);
   };
 
-  // 다음 버튼 클릭
   const handleNext = async () => {
     if (selectedLevel === null) {
       setShowError(true);
@@ -54,10 +58,8 @@ export default function SpeakScreen() {
 
     try {
       const selectedAnswer = options[selectedLevel];
-      // userType 키로 단일 문자열 저장
       await SecureStore.setItemAsync("userType", selectedAnswer);
       console.log("✅ userType 저장됨:", selectedAnswer);
-
       router.push("/Changing");
     } catch (error) {
       console.error("❌ 답변 저장 실패:", error);
@@ -71,7 +73,6 @@ export default function SpeakScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 상단 도트 진행 표시 */}
       <View style={styles.dotsContainer}>
         <View style={[styles.dot, styles.activeDot]} />
         <View style={[styles.dot, styles.activeDot]} />
@@ -79,19 +80,16 @@ export default function SpeakScreen() {
         <View style={styles.dot} />
       </View>
 
-      {/* 이미지 */}
       <Image source={require("../../assets/images/image 50.png")} style={styles.image} />
 
-      {/* 질문 텍스트 */}
       <Text style={styles.questionText}>사용자님은 어떤 유형이신가요?</Text>
 
-      {/* 선택지 박스 */}
       {options.map((text, index) => (
         <Pressable
           key={index}
           style={[
             styles.optionBox,
-            { top: 365 + index * 74 },
+            { top: height * (0.38 + index * 0.085) },
             selectedLevel === index && styles.selectedOption,
           ]}
           onPress={() => handleSelect(index)}
@@ -100,22 +98,19 @@ export default function SpeakScreen() {
         </Pressable>
       ))}
 
-      {/* 에러 메시지 */}
       {showError && (
         <Text style={styles.errorText}>1개 이상은 선택하셔야 다음 선택이 가능해요!</Text>
       )}
 
-      {/* 이전 버튼 */}
       <Pressable
-        style={[styles.prevButton, showError && { top: 615 }]}
+        style={[styles.prevButton, showError && { top: height * 0.66 }]}
         onPress={handleBack}
       >
         <Text style={styles.prevText}>이전</Text>
       </Pressable>
 
-      {/* 다음 버튼 */}
       <Pressable
-        style={[styles.nextButton, showError && { top: 615 }]}
+        style={[styles.nextButton, showError && { top: height * 0.66 }]}
         onPress={handleNext}
       >
         <Text style={styles.nextText}>다음</Text>
@@ -126,22 +121,20 @@ export default function SpeakScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    position: "relative",
-    width: 1344,
-    height: 2992,
+    flex: 1,
     backgroundColor: "#FFFFFF",
   },
   dotsContainer: {
     position: "absolute",
-    top: 62,
-    left: 74,
+    top: height * 0.05,
+    left: width * 0.125,
     flexDirection: "row",
     gap: 6,
   },
   dot: {
-    width: 72,
-    height: 20,
-    borderRadius: 10.76,
+    width: width * 0.18,
+    height: height * 0.015,
+    borderRadius: 10,
     backgroundColor: "rgba(0, 0, 0, 0.15)",
   },
   activeDot: {
@@ -149,69 +142,65 @@ const styles = StyleSheet.create({
   },
   image: {
     position: "absolute",
-    top: 140,
-    left: 150,
-    width: 148,
-    height: 148,
+    top: height * 0.13,
+    left: width * 0.28,
+    width: width * 0.4,
+    height: width * 0.4,
     resizeMode: "contain",
   },
   questionText: {
     position: "absolute",
-    top: 287,
-    left: 23,
-    width: 401,
-    height: 78,
+    top: height * 0.28,
+    left: width * 0.05,
+    width: width * 0.9,
     fontFamily: "Inter",
     fontWeight: "900",
-    fontSize: 25,
+    fontSize: width * 0.06,
     lineHeight: 30,
     color: "#0077FF",
     textAlign: "center",
   },
   optionBox: {
     position: "absolute",
-    left: 43,
-    width: 361,
-    height: 54,
+    left: width * 0.1,
+    width: width * 0.8,
+    height: height * 0.07,
     backgroundColor: "#FFFFFF",
     borderWidth: 3,
     borderColor: "rgba(0, 0, 0, 0.1)",
-    borderRadius: 10.76,
+    borderRadius: 10,
     justifyContent: "center",
   },
   selectedOption: {
     borderColor: "#0077FF",
   },
   optionText: {
-    position: "absolute",
-    top: 10,
-    left: 16,
+    marginLeft: width * 0.04,
     fontFamily: "Inter",
     fontWeight: "900",
-    fontSize: 20,
+    fontSize: width * 0.05,
     lineHeight: 24,
     color: "#000000",
   },
   errorText: {
     position: "absolute",
-    width: 274,
-    height: 17,
-    left: 130,
-    top: 580,
+    top: height * 0.62,
+    left: width * 0.2,
+    width: width * 0.6,
     fontFamily: "Inter",
     fontWeight: "400",
-    fontSize: 14.4,
-    lineHeight: 17,
+    fontSize: width * 0.031,
     color: "#FF0000",
+    textAlign: "center",
   },
   prevButton: {
     position: "absolute",
-    top: 587,
-    left: 43,
-    width: 165,
-    height: 54,
+    top: height * 0.66,
+    left: width * 0.1,
+    width: width * 0.38,
+    height: height * 0.06,
     backgroundColor: "#FFFFFF",
-    borderRadius: 10.76,
+    borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000000",
@@ -223,31 +212,29 @@ const styles = StyleSheet.create({
   prevText: {
     fontFamily: "Inter",
     fontWeight: "900",
-    fontSize: 20,
-    lineHeight: 24,
+    fontSize: width * 0.05,
     color: "#333333",
   },
   nextButton: {
     position: "absolute",
-    top: 587,
-    left: 237,
-    width: 165,
-    height: 54,
+    top: height * 0.66,
+    left: width * 0.52,
+    width: width * 0.38,
+    height: height * 0.06,
     backgroundColor: "#0348DB",
-    borderRadius: 10.76,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
-    justifyContent: "center",
-    alignItems: "center",
   },
   nextText: {
     fontFamily: "Inter",
     fontWeight: "900",
-    fontSize: 20,
-    lineHeight: 24,
+    fontSize: width * 0.05,
     color: "#FFFFFF",
   },
 });

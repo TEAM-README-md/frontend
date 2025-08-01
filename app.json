@@ -13,11 +13,18 @@
       "platforms": [
         "ios",
         "android",
+        "web",
+        "ios",
+        "android",
         "web"
       ],
       "plugins": [
+        "@react-native-async-storage/async-storage",
         "@react-native-async-storage/async-storage"
-      ]
+      ],
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +32,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.rlaalsvkdl.Login2"
+      "package": "com.rlaalsvkdl.Login2",
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "bundler": "metro",
@@ -55,6 +63,9 @@
       "eas": {
         "projectId": "f77aa716-a7db-40e0-a61f-410fea123429"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/f77aa716-a7db-40e0-a61f-410fea123429"
     }
   },
   "locales": {

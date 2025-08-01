@@ -1,11 +1,21 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useCallback, useState } from 'react';
-import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ROUTES = ['/Grow', '/Support', '/Strength', '/Experience', '/Problem', '/Aspiration'] as const;
 type RoutePath = (typeof ROUTES)[number];
-
 type IconType = 'check' | 'arrow';
 
 interface SectionItem {
@@ -21,9 +31,46 @@ interface SectionState {
   route: RoutePath;
 }
 
+const bottomNavItems = [
+  {
+    icon: require('../../assets/images/Group 22.png'),
+    text: '큐레이션',
+    badge: true,
+    route: '/Curation',
+  },
+  {
+    icon: require('../../assets/images/Speech.png'),
+    text: '학습',
+    badge: true,
+    route: '', // 추후 연결할 경우 지정
+  },
+  {
+    icon: require('../../assets/images/home.png'),
+    text: '홈',
+    badge: false,
+    route: '/Home',
+  },
+  {
+    icon: require('../../assets/images/Vector.png'),
+    text: '알림',
+    badge: true,
+    route: '', // 추후 연결할 경우 지정
+  },
+  {
+    icon: require('../../assets/images/Person.png'),
+    text: '내 정보',
+    badge: false,
+    route: '', // 추후 연결할 경우 지정
+  },
+];
+
 export default function HomeScreen() {
   const router = useRouter();
   const [sectionsState, setSectionsState] = useState<SectionState[]>([]);
+  const [showResetButton, setShowResetButton] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [activeNavIndex, setActiveNavIndex] = useState<number | null>(1);
 
   const icons: Record<IconType, any> = {
     check: require('../../assets/images/Check.png'),
@@ -39,35 +86,33 @@ export default function HomeScreen() {
     { title: '입사 후 포부 작성하기', key: 'aspirationSaved', route: '/Aspiration' },
   ];
 
-  useFocusEffect(
-    useCallback(() => {
-      const loadSavedStates = async () => {
-        const updatedSections: SectionState[] = await Promise.all(
-          sectionItems.map(async (item) => {
-            const saved = await SecureStore.getItemAsync(item.key);
-            const isActive = saved === 'true';
-            return {
-              title: item.title,
-              active: isActive,
-              iconType: isActive ? 'check' : 'arrow',
-              route: item.route,
-            } satisfies SectionState;
-          })
-        );
-        setSectionsState(updatedSections);
-      };
+  const loadSavedStates = async () => {
+    const updatedSections: SectionState[] = await Promise.all(
+      sectionItems.map(async (item) => {
+        const saved = await SecureStore.getItemAsync(item.key);
+        const isActive = saved === 'true';
+        return {
+          title: item.title,
+          active: isActive,
+          iconType: isActive ? 'check' : 'arrow',
+          route: item.route,
+        } satisfies SectionState;
+      })
+    );
+    setSectionsState(updatedSections);
+  };
 
-      loadSavedStates();
-    }, [])
-  );
+  useFocusEffect(useCallback(() => {
+    loadSavedStates();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []));
 
   const handleFinalSubmit = async () => {
+    setIsSubmitting(true);
     try {
-      const jwtToken = await SecureStore.getItemAsync("jwtToken");
-      console.log("jwtToken 확인:", jwtToken);
-
-      if (!jwtToken || jwtToken.trim() === "") {
-        Alert.alert("오류", "로그인이 필요합니다.");
+      const jwtToken = await SecureStore.getItemAsync('jwt_token');
+      if (!jwtToken) {
+        Alert.alert('오류', '로그인이 필요합니다.');
         return;
       }
 
@@ -87,11 +132,11 @@ export default function HomeScreen() {
       }
 
       const response = await fetch(
-        "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/cover-letter/final",
+        'https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/cover-letter/final',
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${jwtToken}`,
           },
           body: JSON.stringify(requestBody),
@@ -99,85 +144,149 @@ export default function HomeScreen() {
       );
 
       if (response.ok) {
-        Alert.alert("완료", "최종 저장이 완료되었습니다.");
+        Alert.alert('완료', '최종 저장이 완료되었습니다.');
+        setShowResetButton(true);
       } else {
         const errorText = await response.text();
-        console.error("저장 실패:", errorText);
-        Alert.alert("오류", "저장에 실패했습니다.");
+        console.error('저장 실패:', errorText);
+        Alert.alert('오류', '저장에 실패했습니다.');
       }
     } catch (error) {
-      console.error("에러 발생:", error);
-      Alert.alert("에러", "예상치 못한 에러가 발생했습니다.");
+      console.error('에러 발생:', error);
+      Alert.alert('에러', '예상치 못한 에러가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const bottomNavItems = [
-    {
-      icon: require('../../assets/images/Group 22.png'),
-      text: '큐레이션',
-      active: false,
-      badge: true,
-    },
-    {
-      icon: require('../../assets/images/Speech.png'),
-      text: '학습',
-      active: true,
-      badge: true,
-    },
-    {
-      icon: require('../../assets/images/home.png'),
-      text: '홈',
-      active: false,
-      badge: false,
-    },
-    {
-      icon: require('../../assets/images/Vector.png'),
-      text: '알림',
-      active: false,
-      badge: true,
-    },
-    {
-      icon: require('../../assets/images/Person.png'),
-      text: '내 정보',
-      active: false,
-      badge: false,
-    },
-  ];
+  const handleReset = async () => {
+    setIsResetting(true);
+    try {
+      const jwtToken = await SecureStore.getItemAsync('jwt_token');
+      if (!jwtToken) {
+        Alert.alert('오류', '로그인이 필요합니다.');
+        return;
+      }
+
+      const response = await fetch(
+        'https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/cover-letter/reset',
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        for (const item of sectionItems) {
+          await SecureStore.setItemAsync(item.key, 'false');
+        }
+
+        const resetSections: SectionState[] = sectionItems.map((item) => ({
+          title: item.title,
+          active: false,
+          iconType: 'arrow',
+          route: item.route,
+        }));
+
+        setSectionsState(resetSections);
+        setShowResetButton(false);
+        Alert.alert('초기화 완료', '데이터가 초기화되었습니다.');
+      } else {
+        Alert.alert('오류', '초기화에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('초기화 중 에러:', error);
+      Alert.alert('에러', '초기화 중 문제가 발생했습니다.');
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>자소서 작성</Text>
 
       {sectionsState.map(({ title, active, iconType, route }, index) => (
-        <Pressable
+        <View
           key={index}
           style={[styles.sectionButton, active ? styles.activeButton : styles.inactiveButton]}
-          onPress={() => router.push({ pathname: route })}
         >
           <View style={styles.sectionTextContainer}>
             <Text style={styles.sectionText}>{title}</Text>
           </View>
-          <View style={styles.iconContainer}>
+          <TouchableOpacity
+            onPress={() => router.push({ pathname: route })}
+            style={styles.iconContainer}
+          >
             <Image source={icons[iconType]} style={styles.iconImage} resizeMode="contain" />
-          </View>
-        </Pressable>
+          </TouchableOpacity>
+        </View>
       ))}
 
-      <Pressable style={styles.resultButton} onPress={handleFinalSubmit}>
-        <Text style={styles.resultButtonText}>최종 저장</Text>
-      </Pressable>
+      {sectionsState.every((section) => section.active) ? (
+        !showResetButton ? (
+          <Pressable style={styles.resultButton} onPress={handleFinalSubmit} disabled={isSubmitting}>
+            {isSubmitting ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.resultButtonText}>최종 저장</Text>
+            )}
+          </Pressable>
+        ) : (
+          <>
+            <Pressable style={styles.resetButton} onPress={handleReset} disabled={isResetting}>
+              {isResetting ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.resetText}>초기화</Text>
+              )}
+            </Pressable>
 
-      <View style={styles.bottomNav}>
-        {bottomNavItems.map(({ icon, text, active, badge }, index) => (
-          <View key={index} style={styles.navItemContainer}>
-            <View>
-              <Image source={icon} style={[styles.navIcon, active && { tintColor: '#0077FF' }]} />
-              {badge && <View style={styles.badge} />}
+            <Pressable style={styles.resultButtonAfter} onPress={handleFinalSubmit} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.resultTextAfter}>최종 저장</Text>
+              )}
+            </Pressable>
+          </>
+        )
+      ) : null}
+
+      <View style={styles.bottomBar}>
+  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+    {bottomNavItems.map((item, index) => {
+      const isActive = index === activeNavIndex;
+
+      const handleNavPress = () => {
+        setActiveNavIndex(index);
+        if (item.route) router.push(item.route as any);
+      };
+
+      return (
+        <TouchableOpacity key={index} onPress={handleNavPress}>
+          <View style={styles.navItemWrapper}>
+            <View style={[styles.iconWrapper, isActive && styles.activeIconWrapper]}>
+              <Image
+                source={item.icon}
+                style={[
+                  styles.navIconImage,
+                  { tintColor: isActive ? '#0077FF' : '#000000' }, // ✅ 핵심 변경
+                ]}
+              />
+              {item.badge && <View style={styles.badgeBox} />}
             </View>
-            <Text style={[styles.navItemText, active && styles.navItemActive]}>{text}</Text>
+            <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
+              {item.text}
+            </Text>
           </View>
-        ))}
-      </View>
+        </TouchableOpacity>
+      );
+    })}
+  </ScrollView>
+</View>
     </View>
   );
 }
@@ -212,22 +321,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  activeButton: {
-    backgroundColor: '#38BA47',
-  },
-  inactiveButton: {
-    backgroundColor: '#0077FF',
-  },
-  sectionTextContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sectionText: {
-    color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 18,
-  },
+  activeButton: { backgroundColor: '#38BA47' },
+  inactiveButton: { backgroundColor: '#0077FF' },
+  sectionTextContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  sectionText: { color: '#FFFFFF', fontWeight: '900', fontSize: 18 },
   iconContainer: {
     width: 40,
     height: 40,
@@ -236,10 +333,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
   },
-  iconImage: {
-    width: 24,
-    height: 24,
-  },
+  iconImage: { width: 24, height: 24 },
   resultButton: {
     marginTop: 24,
     height: 48,
@@ -253,58 +347,113 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  resultButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 18,
-  },
-  bottomNav: {
+  resultButtonText: { color: '#FFFFFF', fontWeight: '900', fontSize: 18 },
+  resetButton: {
     position: 'absolute',
-    bottom: 0,
-    width: 412,
-    height: 90,
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 12,
-    borderTopWidth: 0,
-    borderColor: 'transparent',
-  },
-  navItemContainer: {
-    alignItems: 'center',
+    width: 165,
+    height: 54,
+    left: 46,
+    top: 678,
+    backgroundColor: '#C21010',
+    borderRadius: 10.76,
     justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  navIcon: {
-    width: 24,
-    height: 24,
-    marginBottom: 4,
-    resizeMode: 'contain',
-  },
-  navItemText: {
+  resetText: {
     fontFamily: 'Inter',
     fontWeight: '900',
-    fontSize: 14,
+    fontSize: 20,
+    lineHeight: 24,
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  resultButtonAfter: {
+    position: 'absolute',
+    width: 165,
+    height: 54,
+    left: 236,
+    top: 678,
+    backgroundColor: '#0348DB',
+    borderRadius: 10.76,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  resultTextAfter: {
+    fontFamily: 'Inter',
+    fontWeight: '900',
+    fontSize: 20,
+    lineHeight: 24,
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  bottomBar: {
+    position: 'absolute',
+    left: 4,
+    right: 0,
+    top: 903,
+    height: 90,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -5 },
+    shadowOpacity: 0.09,
+    shadowRadius: 6.5,
+  },
+  navItemWrapper: {
+    left: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 80,
+    paddingHorizontal: 10,
+  },
+  iconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activeIconWrapper: {
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  navIconImage: {
+    width: 30,
+    height: 30,
+    resizeMode: 'contain',
+    marginBottom: 4,
+  },
+  navLabel: {
+    fontFamily: 'Inter',
+    fontSize: 14.66,
+    fontWeight: '900',
     color: '#000000',
     textAlign: 'center',
   },
-  navItemActive: {
+  navLabelActive: {
     color: '#0077FF',
   },
-  badge: {
+  badgeBox: {
     position: 'absolute',
-    top: -4,
-    right: -4,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'red',
+    top: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
   },
 });

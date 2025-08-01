@@ -1,56 +1,75 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+export const options = {
+  headerShown: false,
+};
+
+// 디바이스 화면 크기
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const YourComponent = () => {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
-      {/* CHi UP */}
-      <Text style={styles.chiUp}>CHi UP</Text>
+      {/* CHi UP 이미지 */}
+      <Image
+        source={require('../../assets/images/CHi UP.png')}
+        style={styles.chiUpImage}
+        resizeMode="contain"
+      />
 
       {/* 내일을 위해, 목표를 위해 */}
       <Text style={styles.motivationText}>내일을 위해, 목표를 위해.</Text>
 
-      {/* 시작하기 버튼 전체 터치 영역 */}
+      {/* 시작하기 버튼 */}
       <TouchableOpacity
         style={styles.startButton}
-        onPress={() => router.push('/LoginScreen')} // 여기를 고쳤습니다!
+        onPress={() => router.push('/LoginScreen')}
       >
         <Text style={styles.startText}>시작하기</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    width: 1344,
-    height: 2992,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
     backgroundColor: '#007FFF',
   },
-  chiUp: {
+  chiUpImage: {
     position: 'absolute',
-    width: 295,
-    height: 90,
-    left: 70,
-    top: 337,
-    fontFamily: '',
+    width: SCREEN_WIDTH * 0.7,      // 예: 전체 너비의 70%
+    height: SCREEN_HEIGHT * 0.1,    // 예: 전체 높이의 10%
+    left: SCREEN_WIDTH * 0.15,      // 중앙 정렬을 위한 left
+    top: SCREEN_HEIGHT * 0.3,
+  },
+  motivationText: {
+    position: 'absolute',
+    width: SCREEN_WIDTH * 0.8,
+    height: SCREEN_HEIGHT * 0.03,
+    left: SCREEN_WIDTH * 0.1,
+    top: SCREEN_HEIGHT * 0.43,
+    fontFamily: 'Inter',
     fontWeight: '900',
-    fontSize: 85,
-    lineHeight: 103,
+    fontSize: SCREEN_WIDTH * 0.05,
+    lineHeight: SCREEN_HEIGHT * 0.03,
     textAlign: 'center',
     color: '#FFFFFF',
   },
   startButton: {
     position: 'absolute',
-    width: 361,
-    height: 54,
-    left: 40,
-    top: 447,
+    width: SCREEN_WIDTH * 0.8,
+    height: SCREEN_HEIGHT * 0.06,
+    left: SCREEN_WIDTH * 0.1,
+    top: SCREEN_HEIGHT * 0.48,
     backgroundColor: '#FFFFFF',
-    borderRadius: 10.76,
+    borderRadius: SCREEN_WIDTH * 0.025,
     elevation: 4,
     justifyContent: 'center',
     alignItems: 'center',
@@ -58,22 +77,9 @@ const styles = StyleSheet.create({
   startText: {
     fontFamily: 'Inter',
     fontWeight: '500',
-    fontSize: 21.52,
-    lineHeight: 26,
+    fontSize: SCREEN_WIDTH * 0.055,
+    lineHeight: SCREEN_HEIGHT * 0.03,
     color: '#007FFF',
-  },
-  motivationText: {
-    position: 'absolute',
-    width: 300,
-    height: 23,
-    left: 70,
-    top: 415,
-    fontFamily: 'Inter',
-    fontWeight: '900',
-    fontSize: 20,
-    lineHeight: 24,
-    textAlign: 'center',
-    color: '#FFFFFF',
   },
 });
 

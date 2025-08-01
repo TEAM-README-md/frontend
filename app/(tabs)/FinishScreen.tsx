@@ -1,8 +1,15 @@
-// FinishScreen.tsx
-
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const FinishScreen = () => {
   const router = useRouter();
@@ -39,39 +46,39 @@ export default FinishScreen;
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    width: 1334,
-    height: 2992,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
     backgroundColor: '#4BD37B',
     alignItems: 'center',
   },
   image: {
     position: 'absolute',
-    width: 146,
-    height: 146,
-    top: 293,
-    left: 150,
+    width: SCREEN_WIDTH * 0.25, // 예: 약 100~150px
+    height: SCREEN_WIDTH * 0.25,
+    top: SCREEN_HEIGHT * 0.25,
+    left: SCREEN_WIDTH * 0.37,
   },
   description: {
     position: 'absolute',
-    width: 379,
-    height: 58,
-    top: 439,
-    left: 35,
+    width: SCREEN_WIDTH * 0.85,
+    height: SCREEN_HEIGHT * 0.1,
+    top: SCREEN_HEIGHT * 0.41,
+    left: SCREEN_WIDTH * 0.07,
     fontFamily: 'Inter',
     fontWeight: '900',
-    fontSize: 17,
-    lineHeight: 21,
+    fontSize: SCREEN_WIDTH * 0.042, // 약 16~18
+    lineHeight: SCREEN_WIDTH * 0.055,
     textAlign: 'center',
     color: '#FFFFFF',
   },
   backButton: {
     position: 'absolute',
-    top: 511,
-    left: 45,
-    width: 165,
-    height: 54,
+    top: SCREEN_HEIGHT * 0.5,
+    left: SCREEN_WIDTH * 0.08,
+    width: SCREEN_WIDTH * 0.38,
+    height: SCREEN_HEIGHT * 0.055,
     backgroundColor: '#FFFFFF',
-    borderRadius: 10.7629,
+    borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -83,19 +90,19 @@ const styles = StyleSheet.create({
   backText: {
     fontFamily: 'Inter',
     fontWeight: '900',
-    fontSize: 20,
-    lineHeight: 24,
+    fontSize: SCREEN_WIDTH * 0.05,
+    lineHeight: SCREEN_WIDTH * 0.06,
     color: '#000000',
     textAlign: 'center',
   },
   startButton: {
     position: 'absolute',
-    top: 511,
-    left: 237,
-    width: 165,
-    height: 54,
+    top: SCREEN_HEIGHT * 0.5,
+    left: SCREEN_WIDTH * 0.54,
+    width: SCREEN_WIDTH * 0.38,
+    height: SCREEN_HEIGHT * 0.055,
     backgroundColor: '#4CAF50',
-    borderRadius: 10.7629,
+    borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -107,8 +114,8 @@ const styles = StyleSheet.create({
   startText: {
     fontFamily: 'Inter',
     fontWeight: '900',
-    fontSize: 20,
-    lineHeight: 24,
+    fontSize: SCREEN_WIDTH * 0.05,
+    lineHeight: SCREEN_WIDTH * 0.06,
     color: '#FFFFFF',
     textAlign: 'center',
   },

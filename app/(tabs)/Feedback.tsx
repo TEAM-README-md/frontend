@@ -16,6 +16,7 @@ import {
 export default function Feedback() {
   const router = useRouter();
   const [feedback, setFeedback] = useState("");
+  // eslint-disable-next-line no-empty-pattern
   const [] = useState(false);
 
   useEffect(() => {

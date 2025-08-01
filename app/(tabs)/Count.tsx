@@ -1,9 +1,17 @@
-// 실행되는
-
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Dimensions,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function CountScreen() {
   const router = useRouter();
@@ -32,10 +40,8 @@ export default function CountScreen() {
       }
 
       try {
-        // 단일 값으로 questionCount 저장
         await SecureStore.setItemAsync("questionCount", String(count));
         console.log("✅ questionCount 저장됨:", count);
-
         router.push("/Submission");
       } catch (err) {
         console.error("❌ 답변 저장 실패:", err);
@@ -98,11 +104,11 @@ export default function CountScreen() {
         <Text style={styles.maxErrorText}>최대 15 이하로 선택하실 수 있어요</Text>
       )}
 
-      <Pressable style={[styles.prevButton, errorType && { top: 487 }]} onPress={handleBack}>
+      <Pressable style={[styles.prevButton, errorType && { top: SCREEN_HEIGHT * 0.53 }]} onPress={handleBack}>
         <Text style={styles.prevText}>이전</Text>
       </Pressable>
 
-      <Pressable style={[styles.nextButton, errorType && { top: 487 }]} onPress={handleNext}>
+      <Pressable style={[styles.nextButton, errorType && { top: SCREEN_HEIGHT * 0.53 }]} onPress={handleNext}>
         <Text style={styles.nextText}>다음</Text>
       </Pressable>
     </View>
@@ -111,53 +117,44 @@ export default function CountScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    position: "relative",
-    width: 1344,
-    height: 2992,
+    flex: 1,
     backgroundColor: "#FFFFFF",
   },
   dotsContainer: {
-    position: "absolute",
-    top: 62,
-    left: 74,
+    marginTop: SCREEN_HEIGHT * 0.06,
+    marginLeft: SCREEN_WIDTH * 0.17,
     flexDirection: "row",
     gap: 6,
   },
   dot: {
-    width: 72,
-    height: 20,
+    width: SCREEN_WIDTH * 0.15,
+    height: SCREEN_HEIGHT * 0.015,
     borderRadius: 10,
     backgroundColor: "rgba(0, 0, 0, 0.15)",
+    marginRight: 5,
   },
   activeDot: {
     backgroundColor: "#0077FF",
   },
   image: {
-    position: "absolute",
-    top: 140,
-    left: 150,
-    width: 148,
-    height: 148,
+    width: SCREEN_WIDTH * 0.4,
+    height: SCREEN_WIDTH * 0.4,
     resizeMode: "contain",
+    alignSelf: "center",
+    marginTop: SCREEN_HEIGHT * 0.05,
   },
   questionText: {
-    position: "absolute",
-    top: 287,
-    left: 23,
-    width: 401,
-    height: 78,
+    marginTop: SCREEN_HEIGHT * 0.03,
+    marginHorizontal: SCREEN_WIDTH * 0.05,
     fontFamily: "Inter",
     fontWeight: "900",
-    fontSize: 25,
-    lineHeight: 30,
+    fontSize: 24,
     color: "#0077FF",
     textAlign: "center",
   },
   counterBox: {
-    position: "absolute",
-    top: 368,
-    left: 42,
-    width: 361,
+    marginTop: SCREEN_HEIGHT * 0.04,
+    marginHorizontal: SCREEN_WIDTH * 0.1,
     height: 54,
     flexDirection: "row",
     alignItems: "center",
@@ -186,34 +183,26 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   minErrorText: {
-    position: "absolute",
-    width: 274,
-    height: 17,
-    left: 124,
-    top: 459,
+    marginTop: SCREEN_HEIGHT * 0.015,
+    alignSelf: "center",
     fontFamily: "Inter",
     fontWeight: "400",
-    fontSize: 14.4,
-    lineHeight: 17,
+    fontSize: 14,
     color: "#FF0000",
   },
   maxErrorText: {
-    position: "absolute",
-    width: 212,
-    height: 17,
-    left: 186,
-    top: 459,
+    marginTop: SCREEN_HEIGHT * 0.015,
+    alignSelf: "center",
     fontFamily: "Inter",
     fontWeight: "400",
-    fontSize: 14.4,
-    lineHeight: 17,
+    fontSize: 14,
     color: "#FF0000",
   },
   prevButton: {
     position: "absolute",
-    top: 487,
-    left: 43,
-    width: 165,
+    top: SCREEN_HEIGHT * 0.5,
+    left: SCREEN_WIDTH * 0.1,
+    width: SCREEN_WIDTH * 0.37,
     height: 54,
     backgroundColor: "#FFFFFF",
     borderRadius: 10.76,
@@ -233,9 +222,9 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     position: "absolute",
-    top: 487,
-    left: 237,
-    width: 165,
+    top: SCREEN_HEIGHT * 0.5,
+    left: SCREEN_WIDTH * 0.53,
+    width: SCREEN_WIDTH * 0.37,
     height: 54,
     backgroundColor: "#0348DB",
     borderRadius: 10.76,

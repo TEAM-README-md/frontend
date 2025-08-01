@@ -4,12 +4,15 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   Image,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const FinishScreen = () => {
   const router = useRouter();
@@ -95,7 +98,7 @@ const FinishScreen = () => {
         await SecureStore.deleteItemAsync('userType');
         await SecureStore.deleteItemAsync('questionCount');
         await SecureStore.deleteItemAsync('isChangingJob');
-        router.push('/Home');
+        router.push('/FinishScreen');
       } else {
         Alert.alert('제출 실패', `오류 코드: ${response.status}\n${responseText || '응답 없음'}`);
       }
@@ -116,7 +119,7 @@ const FinishScreen = () => {
       />
 
       <Text style={styles.description}>
-        이대로 설문조사를 제출하시겠습니까?{'\n'}
+        이대로 설문조사를 제출하시겠습니까?{"\n"}
         이후 설정을 통해 이미 제출한 내용을 변경 가능합니다.
       </Text>
 
@@ -149,47 +152,34 @@ export default FinishScreen;
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative',
-    width: 1334,
-    height: 2992,
+    flex: 1,
     backgroundColor: '#0077FF',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   image: {
-    position: 'absolute',
-    width: 146,
-    height: 146,
-    top: 293,
-    left: 150,
+    width: SCREEN_WIDTH * 0.3,
+    height: SCREEN_WIDTH * 0.3,
+    marginBottom: SCREEN_HEIGHT * 0.05,
   },
   description: {
-    position: 'absolute',
-    width: 379,
-    height: 58,
-    top: 439,
-    left: 35,
+    width: SCREEN_WIDTH * 0.9,
+    textAlign: 'center',
     fontFamily: 'Inter',
     fontWeight: '900',
-    fontSize: 16,
-    lineHeight: 24,
-    textAlign: 'center',
+    fontSize: SCREEN_WIDTH * 0.04,
+    lineHeight: SCREEN_WIDTH * 0.06,
     color: '#FFFFFF',
+    marginBottom: SCREEN_HEIGHT * 0.05,
   },
   backButton: {
-    position: 'absolute',
-    top: 511,
-    left: 45,
-    width: 165,
+    width: SCREEN_WIDTH * 0.4,
     height: 54,
     backgroundColor: '#FFFFFF',
     borderRadius: 10.76,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 20,
   },
   backText: {
     fontFamily: 'Inter',
@@ -197,21 +187,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 24,
     color: '#000000',
-    textAlign: 'center',
   },
   startButton: {
-    position: 'absolute',
-    top: 511,
-    left: 237,
-    width: 165,
+    width: SCREEN_WIDTH * 0.4,
     height: 54,
     backgroundColor: '#38BA47',
     borderRadius: 10.76,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -221,6 +202,5 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 24,
     color: '#FFFFFF',
-    textAlign: 'center',
   },
 });

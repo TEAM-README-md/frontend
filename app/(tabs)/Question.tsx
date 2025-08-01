@@ -14,8 +14,6 @@ import {
   View,
 } from "react-native"
 
-const isError = (error: unknown): error is Error => error instanceof Error
-
 interface AuthTokens {
   jwtToken: string
   refreshToken?: string
@@ -27,16 +25,20 @@ interface InterviewQuestion {
   question: string
 }
 
-type RequestHeaders = Record<string, string>
+const isError = (error: unknown): error is Error => error instanceof Error
 
 export default function Question() {
   const router = useRouter()
-  const [question, setQuestion] = useState<InterviewQuestion | null>(null)
   const [authTokens, setAuthTokens] = useState<AuthTokens | null>(null)
   const [userId, setUserId] = useState("")
+  const [questions, setQuestions] = useState<InterviewQuestion[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [userAnswer, setUserAnswer] = useState("")
   const [feedback, setFeedback] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [questionCount, setQuestionCount] = useState(3)
+  const [questionsLoaded, setQuestionsLoaded] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -53,6 +55,7 @@ export default function Question() {
     const refreshToken = await SecureStore.getItemAsync("refreshToken")
     const expiresAt = await SecureStore.getItemAsync("tokenExpiresAt")
     const id = await SecureStore.getItemAsync("userId")
+    const count = await SecureStore.getItemAsync("questionCount")
 
     if (jwt) {
       setAuthTokens({
@@ -62,131 +65,168 @@ export default function Question() {
       })
     }
     if (id) setUserId(id)
+    if (count) setQuestionCount(parseInt(count, 10))
   }
 
-  const createHeaders = (
-    additionalHeaders: Partial<Record<string, string | undefined>> = {}
-  ): RequestHeaders => {
-    const baseHeaders: RequestHeaders = {
+  const createHeaders = (): Record<string, string> => {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",
     }
-
-    if (authTokens?.jwtToken) baseHeaders.Authorization = `Bearer ${authTokens.jwtToken}`
-    if (userId) baseHeaders["X-User-ID"] = userId
-
-    for (const [key, value] of Object.entries(additionalHeaders)) {
-      if (typeof value === "string") baseHeaders[key] = value
-    }
-
-    return baseHeaders
+    if (authTokens?.jwtToken) headers.Authorization = `Bearer ${authTokens.jwtToken}`
+    if (userId) headers["X-User-ID"] = userId
+    return headers
   }
 
-  const handleFetchQuestion = async () => {
-  setIsLoading(true)
-  try {
-    const headers = createHeaders()
+  const fetchQuestions = async () => {
+    if (questionsLoaded) return
 
-    const chapters = ["growth", "motivation", "strength", "experience", "problem", "future"]
-    const randomChapter = chapters[Math.floor(Math.random() * chapters.length)]
+    setIsLoading(true)
+    try {
+      const headers = createHeaders()
+      const allQuestions: InterviewQuestion[] = []
 
-    const response = await fetch(
-      "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/interview/survey/questions",
-      {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ chapter: randomChapter }),
+      const res1 = await fetch(
+        "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/interview/cover-letter/questions",
+        { method: "GET", headers }
+      )
+      const text1 = await res1.text()
+      try {
+        const data1 = JSON.parse(text1)
+        if (Array.isArray(data1)) {
+          data1.forEach((q: any) => {
+            if (q.chapter && q.question) {
+              allQuestions.push({ chapter: q.chapter, question: q.question })
+            }
+          })
+        }
+      } catch {}
+
+      const chapters = ["growth", "motivation", "strength", "experience", "problem", "future"]
+      const surveyQuestions: InterviewQuestion[] = []
+
+      for (let i = 0; i < questionCount; i++) {
+        const chapter = chapters[i % chapters.length]
+        const res = await fetch(
+          "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/interview/survey/questions",
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ chapter }),
+          }
+        )
+        const data = await res.json()
+        if (data?.chapter && data?.question) {
+          surveyQuestions.push({ chapter: data.chapter, question: data.question })
+        }
       }
-    )
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`서버 오류: ${response.status} - ${errorText}`)
-    }
+      allQuestions.push(...surveyQuestions)
 
-    const data = await response.json()
-console.log("✅ 서버 응답 내용:", JSON.stringify(data, null, 2))
+      if (allQuestions.length === 0) {
+        throw new Error("질문을 불러오지 못했습니다.")
+      }
 
-    // 서버 구조에 맞게 키 수정 필요
-    if (data?.question?.chapter && data?.question?.text) {
-      setQuestion({
-        chapter: data.question.chapter,
-        question: data.question.text,
-      })
+      setQuestions(allQuestions)
+      setCurrentIndex(0)
       setUserAnswer("")
       setFeedback("")
-    } else {
-      throw new Error("서버에서 올바른 질문 형식이 반환되지 않았습니다.")
+      setQuestionsLoaded(true)
+    } catch (e) {
+      Alert.alert("에러", isError(e) ? e.message : String(e))
+    } finally {
+      setIsLoading(false)
     }
-  } catch (e) {
-    console.error("❌ 질문 요청 실패:", e)
-    Alert.alert("질문 요청 에러", isError(e) ? e.message : String(e))
-  } finally {
-    setIsLoading(false)
   }
-}
 
   const handleSubmitAnswer = async () => {
-    if (!question || !userAnswer.trim()) {
+    const current = questions[currentIndex]
+    if (!current || !userAnswer.trim()) {
       Alert.alert("답변 없음", "답변을 작성해 주세요.")
       return
     }
 
+    setIsSubmitting(true)
     try {
       const headers = createHeaders()
-      const response = await fetch(
+      const res = await fetch(
         "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/interview/feedback",
         {
           method: "POST",
           headers,
           body: JSON.stringify({
-            chapter: question.chapter,
-            question: question.question,
+            chapter: current.chapter,
+            question: current.question,
             answer: userAnswer,
           }),
         }
       )
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`서버 오류: ${response.status} - ${errorText}`)
-      }
-
-      const data = await response.json()
-
-      if (data?.feedback) {
+      const data = await res.json()
+      if (res.ok && data?.feedback) {
         setFeedback(data.feedback)
       } else {
-        Alert.alert("서버 응답 오류", "피드백 내용을 받지 못했습니다.")
+        Alert.alert("피드백 없음", data?.message || "피드백을 받을 수 없습니다.")
       }
     } catch (e) {
-      console.error("❌ 피드백 요청 실패:", e)
       Alert.alert("에러", isError(e) ? e.message : String(e))
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
+  const handleNext = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(currentIndex + 1)
+      setUserAnswer("")
+      setFeedback("")
+    } else {
+      Alert.alert("완료", "모든 질문을 완료했습니다.", [
+        {
+          text: "확인",
+          onPress: async () => {
+            setQuestions([])
+            setCurrentIndex(0)
+            setUserAnswer("")
+            setFeedback("")
+            setQuestionsLoaded(false)
+            await SecureStore.deleteItemAsync("questionCount")
+            router.push("/Home")
+          },
+        },
+      ])
+    }
+  }
+
+  const currentQuestion = questions[currentIndex]
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>맞춤형 면접 질문</Text>
+      <Pressable style={styles.closeButton} onPress={() => router.push("/Home")}> 
+        <Text style={styles.closeText}>X</Text>
+      </Pressable>
 
-      <Pressable style={styles.button} onPress={handleFetchQuestion} disabled={isLoading}>
-        {isLoading ? (
-          <ActivityIndicator size="small" color="#FFF" />
-        ) : (
-          <Text style={styles.buttonText}>질문 가져오기</Text>
-        )}
+      <Text style={styles.title}>면접 질문 {currentIndex + 1} / {questions.length}</Text>
+
+      <Pressable
+        style={styles.button}
+        onPress={fetchQuestions}
+        disabled={isLoading || questionsLoaded}
+      >
+        {isLoading
+          ? <ActivityIndicator color="#FFF" />
+          : <Text style={styles.buttonText}>질문 가져오기</Text>}
       </Pressable>
 
       <ScrollView style={styles.scrollBox}>
-        {question ? (
+        {currentQuestion ? (
           <View style={styles.questionBox}>
-            <Text style={styles.chapter}>[{question.chapter}]</Text>
-            <Text style={styles.question}>{question.question}</Text>
+            <Text style={styles.chapter}>[{currentQuestion.chapter}]</Text>
+            <Text style={styles.question}>{currentQuestion.question}</Text>
 
             <TextInput
               style={styles.input}
               multiline
-              placeholder="여기에 답변을 작성해 주세요..."
+              placeholder="답변을 입력하세요..."
               value={userAnswer}
               onChangeText={setUserAnswer}
               textAlignVertical="top"
@@ -200,8 +240,8 @@ console.log("✅ 서버 응답 내용:", JSON.stringify(data, null, 2))
             )}
           </View>
         ) : (
-          <Text style={{ textAlign: "center", marginTop: 20, color: "#888" }}>
-            질문을 먼저 가져와 주세요.
+          <Text style={{ textAlign: "center", color: "#888", marginTop: 20 }}>
+            질문을 먼저 불러와 주세요.
           </Text>
         )}
       </ScrollView>
@@ -209,8 +249,33 @@ console.log("✅ 서버 응답 내용:", JSON.stringify(data, null, 2))
       <Pressable
         style={[styles.button, { backgroundColor: "#28A745" }]}
         onPress={handleSubmitAnswer}
+        disabled={isSubmitting}
       >
-        <Text style={styles.buttonText}>답변 제출 및 피드백 받기</Text>
+        {isSubmitting
+          ? <ActivityIndicator color="#FFF" />
+          : <Text style={styles.buttonText}>답변 제출 및 피드백 받기</Text>}
+      </Pressable>
+
+      <Pressable
+        style={[
+          styles.button,
+          {
+            backgroundColor:
+              currentIndex >= questions.length - 1
+                ? "#28A745"
+                : userAnswer && feedback
+                ? "#666"
+                : "#CCC",
+          },
+        ]}
+        onPress={handleNext}
+        disabled={
+          currentIndex < questions.length - 1 && (!userAnswer || !feedback)
+        }
+      >
+        <Text style={styles.buttonText}>
+          {currentIndex >= questions.length - 1 ? "완료" : "다음 질문"}
+        </Text>
       </Pressable>
     </View>
   )
@@ -219,14 +284,32 @@ console.log("✅ 서버 응답 내용:", JSON.stringify(data, null, 2))
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFF", padding: 24 },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "900",
     textAlign: "center",
-    marginBottom: 24,
+    marginTop: 40,
+    marginBottom: 12,
     color: "#000",
   },
+  closeButton: {
+    position: "absolute",
+    top: 36,
+    left: 16,
+    zIndex: 999,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closeText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
   button: {
-    marginVertical: 12,
+    marginVertical: 8,
     backgroundColor: "#0348DB",
     paddingVertical: 14,
     borderRadius: 10,

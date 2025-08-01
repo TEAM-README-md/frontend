@@ -2,17 +2,17 @@ import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 
 export default function Grow() {
@@ -89,7 +89,7 @@ export default function Grow() {
 
           {/* 설명 텍스트 */}
           <Text style={styles.description}>
-            회사 입사 후 앞으로의 계획을 알려주세요!{`\n`}저희가 피드백을 해드릴 거예요.
+            회사 입사 후 앞으로의 계획을 알려주세요!{"\n"}저희가 피드백을 해드릴 거예요.
           </Text>
 
           {/* 흰색 배경 박스 */}
