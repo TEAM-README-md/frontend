@@ -27,7 +27,7 @@ const LoginScreen = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const API_BASE_URL =
-    "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app"
+    "http://3.34.53.204:8080"
 
   const saveTokenSafely = async (token: any, additionalData?: any): Promise<boolean> => {
     try {
@@ -191,7 +191,6 @@ const LoginScreen = () => {
         <Text style={styles.noAccount}>계정이 없으신가요?</Text>
       </TouchableOpacity>
 
-      <Text style={styles.findAccount}>아이디 / 비밀번호 찾기</Text>
     </ScrollView>
   )
 }

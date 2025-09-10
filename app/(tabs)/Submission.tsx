@@ -75,7 +75,7 @@ const FinishScreen = () => {
       console.log('📝 제출 데이터:', payload);
 
       const response = await fetch(
-        'https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/survey',
+        'http://3.34.53.204:8080/api/survey',
         {
           method: 'POST',
           headers: {

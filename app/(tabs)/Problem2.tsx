@@ -3,14 +3,7 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router"
 import * as SecureStore from "expo-secure-store"
 import { useCallback, useEffect, useState } from "react"
-import {
-    ActivityIndicator,
-    Alert,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
-} from "react-native"
+import { ActivityIndicator, Alert, Dimensions, Pressable, StyleSheet, Text, View } from "react-native"
 
 const isError = (error: unknown): error is Error => error instanceof Error
 
@@ -21,6 +14,8 @@ interface AuthTokens {
 }
 
 type RequestHeaders = Record<string, string>
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window")
 
 export default function Grow2() {
   const router = useRouter()
@@ -37,7 +32,7 @@ export default function Grow2() {
   useFocusEffect(
     useCallback(() => {
       loadData()
-    }, [])
+    }, []),
   )
 
   const createHeaders = (additionalHeaders: Partial<RequestHeaders> = {}): RequestHeaders => {
@@ -72,7 +67,7 @@ export default function Grow2() {
           name: "Test2 Generated User",
           iat: Math.floor(Date.now() / 1000),
           exp: Math.floor(Date.now() / 1000) + 86400,
-        })
+        }),
       )
       const signature = "test2-signature-" + Math.random().toString(36).substring(2, 15)
       const autoToken = `${header}.${payload}.${signature}`
@@ -110,21 +105,16 @@ export default function Grow2() {
         isDraft: true,
       }
 
-      const response = await makeAuthenticatedRequest(
-        "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/cover-letter/draft",
-        {
-          method: "POST",
-          body: JSON.stringify(requestData),
-        }
-      )
+      const response = await makeAuthenticatedRequest("http://3.34.53.204:8080/api/cover-letter/draft", {
+        method: "POST",
+        body: JSON.stringify(requestData),
+      })
 
       const text = await response.text()
 
       if (response.ok) {
         await SecureStore.setItemAsync("problemSaved", "true")
-        Alert.alert("저장 완료", "임시 저장 성공!", [
-          { text: "확인", onPress: () => router.push("/Writing") },
-        ])
+        Alert.alert("저장 완료", "임시 저장 성공!", [{ text: "확인", onPress: () => router.push("/Writing") }])
       } else {
         console.error("❌ 임시 저장 실패 상태:", response.status)
         console.error("❌ 서버 응답 본문:", text)
@@ -150,7 +140,7 @@ export default function Grow2() {
       setAuthTokens({
         jwtToken: jwt,
         refreshToken: refreshToken || undefined,
-        expiresAt: expiresAt ? parseInt(expiresAt) : undefined,
+        expiresAt: expiresAt ? Number.parseInt(expiresAt) : undefined,
       })
     } else {
       setAuthTokens(null)
@@ -164,7 +154,8 @@ export default function Grow2() {
     <View style={styles.container}>
       <Text style={styles.title}>AI 피드백</Text>
       <Text style={styles.description}>
-        작성하신 질문을 바탕으로 AI가 질문에{"\n"}맞는 피드백을 생성합니다.
+        작성하신 질문을 바탕으로 AI가 질문에{"\n"}
+        맞는 피드백을 생성합니다.
       </Text>
 
       <View style={styles.feedbackBox}>
@@ -192,60 +183,50 @@ export default function Grow2() {
 
 const styles = StyleSheet.create({
   container: {
-    position: "relative",
-    width: 1332,
-    height: 917,
-    backgroundColor: "#0077FF",
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: screenWidth * 0.05,
+    paddingTop: screenHeight * 0.06,
   },
   title: {
-    position: "absolute",
-    width: 394,
-    height: 77,
-    left: 30,
-    top: 52,
+    width: "100%",
+    fontSize: screenWidth * 0.08,
     fontFamily: "Inter",
     fontWeight: "900",
-    fontSize: 32,
-    lineHeight: 39,
     textAlign: "center",
-    color: "#FFFFFF",
+    color: "#0077FF",
+    marginBottom: screenHeight * 0.02,
   },
   description: {
-    position: "absolute",
-    width: 238,
-    height: 53,
-    left: 109,
-    top: 121,
+    width: "100%",
+    fontSize: screenWidth * 0.04,
     fontFamily: "Inter",
     fontWeight: "900",
-    fontSize: 15,
-    lineHeight: 18,
     textAlign: "center",
-    color: "#FFFFFF",
+    color: "#0077FF",
+    marginBottom: screenHeight * 0.03,
   },
   feedbackBox: {
-    position: "absolute",
-    width: 361,
-    height: 551,
-    left: 45,
-    top: 164,
+    width: "100%",
+    height: screenHeight * 0.55,
     backgroundColor: "#FFFFFF",
     borderWidth: 3,
     borderColor: "rgba(0, 0, 0, 0.1)",
     borderRadius: 10.76,
-    padding: 16,
+    padding: screenWidth * 0.04,
+    marginBottom: screenHeight * 0.04,
   },
   feedbackText: {
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: screenWidth * 0.04,
+    lineHeight: screenWidth * 0.055,
     color: "#000000",
   },
   saveButton: {
     position: "absolute",
-    width: 165,
-    height: 54,
-    left: 243,
-    top: 754,
+    width: screenWidth * 0.4,
+    height: screenHeight * 0.07,
+    right: screenWidth * 0.05,
+    bottom: screenHeight * 0.05,
     backgroundColor: "#0348DB",
     borderRadius: 10.76,
     justifyContent: "center",
@@ -254,17 +235,18 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontFamily: "Inter",
     fontWeight: "900",
-    fontSize: 20,
-    lineHeight: 24,
+    fontSize: screenWidth * 0.05,
     color: "#FFFFFF",
   },
   backButton: {
     position: "absolute",
-    width: 165,
-    height: 54,
-    left: 53,
-    top: 754,
+    width: screenWidth * 0.4,
+    height: screenHeight * 0.07,
+    left: screenWidth * 0.05,
+    bottom: screenHeight * 0.05,
     backgroundColor: "#FFFFFF",
+    borderWidth: 2,
+    borderColor: "#0077FF",
     borderRadius: 10.76,
     justifyContent: "center",
     alignItems: "center",
@@ -272,8 +254,7 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontFamily: "Inter",
     fontWeight: "900",
-    fontSize: 20,
-    lineHeight: 24,
+    fontSize: screenWidth * 0.05,
     color: "#0077FF",
   },
 })

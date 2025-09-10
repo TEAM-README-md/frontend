@@ -1,9 +1,12 @@
-import { useFocusEffect, useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import React, { useCallback, useState } from 'react';
+"use client"
+
+import { useFocusEffect, useRouter } from "expo-router"
+import * as SecureStore from "expo-secure-store"
+import { useCallback, useState } from "react"
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   Image,
   Pressable,
   ScrollView,
@@ -11,215 +14,207 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native"
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window")
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ROUTES = ['/Grow', '/Support', '/Strength', '/Experience', '/Problem', '/Aspiration'] as const;
-type RoutePath = (typeof ROUTES)[number];
-type IconType = 'check' | 'arrow';
+const ROUTES = ["/Grow", "/Support", "/Strength", "/Experience", "/Problem", "/Aspiration"] as const
+type RoutePath = (typeof ROUTES)[number]
+type IconType = "check" | "arrow"
 
 interface SectionItem {
-  title: string;
-  key: string;
-  route: RoutePath;
+  title: string
+  key: string
+  route: RoutePath
 }
 
 interface SectionState {
-  title: string;
-  active: boolean;
-  iconType: IconType;
-  route: RoutePath;
+  title: string
+  active: boolean
+  iconType: IconType
+  route: RoutePath
 }
 
 const bottomNavItems = [
   {
-    icon: require('../../assets/images/Group 22.png'),
-    text: '큐레이션',
+    icon: require("../../assets/images/Group 22.png"),
+    text: "큐레이션",
     badge: true,
-    route: '/Curation',
+    route: "/Curation",
   },
   {
-    icon: require('../../assets/images/Speech.png'),
-    text: '학습',
+    icon: require("../../assets/images/Speech.png"),
+    text: "학습",
     badge: true,
-    route: '', // 추후 연결할 경우 지정
+    route: "", // 추후 연결할 경우 지정
   },
   {
-    icon: require('../../assets/images/home.png'),
-    text: '홈',
+    icon: require("../../assets/images/home.png"),
+    text: "홈",
     badge: false,
-    route: '/Home',
+    route: "/Home",
   },
   {
-    icon: require('../../assets/images/Vector.png'),
-    text: '알림',
+    icon: require("../../assets/images/Vector.png"),
+    text: "알림",
     badge: true,
-    route: '', // 추후 연결할 경우 지정
+    route: "", // 추후 연결할 경우 지정
   },
   {
-    icon: require('../../assets/images/Person.png'),
-    text: '내 정보',
+    icon: require("../../assets/images/Person.png"),
+    text: "내 정보",
     badge: false,
-    route: '', // 추후 연결할 경우 지정
+    route: "", // 추후 연결할 경우 지정
   },
-];
+]
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const [sectionsState, setSectionsState] = useState<SectionState[]>([]);
-  const [showResetButton, setShowResetButton] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
-  const [activeNavIndex, setActiveNavIndex] = useState<number | null>(1);
+  const router = useRouter()
+  const [sectionsState, setSectionsState] = useState<SectionState[]>([])
+  const [showResetButton, setShowResetButton] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
+  const [activeNavIndex, setActiveNavIndex] = useState<number | null>(1)
 
   const icons: Record<IconType, any> = {
-    check: require('../../assets/images/Check.png'),
-    arrow: require('../../assets/images/Vector A.png'),
-  };
+    check: require("../../assets/images/Check.png"),
+    arrow: require("../../assets/images/Vector A.png"),
+  }
 
   const sectionItems: SectionItem[] = [
-    { title: '성장과정 작성하기', key: 'growthSaved', route: '/Grow' },
-    { title: '지원동기 작성하기', key: 'supportSaved', route: '/Support' },
-    { title: '장단점 작성하기', key: 'strengthSaved', route: '/Strength' },
-    { title: '직무 관련 경험 작성하기', key: 'experienceSaved', route: '/Experience' },
-    { title: '문제 해결 경험 작성하기', key: 'problemSaved', route: '/Problem' },
-    { title: '입사 후 포부 작성하기', key: 'aspirationSaved', route: '/Aspiration' },
-  ];
+    { title: "성장과정 작성하기", key: "growthSaved", route: "/Grow" },
+    { title: "지원동기 작성하기", key: "supportSaved", route: "/Support" },
+    { title: "장단점 작성하기", key: "strengthSaved", route: "/Strength" },
+    { title: "직무 관련 경험 작성하기", key: "experienceSaved", route: "/Experience" },
+    { title: "문제 해결 경험 작성하기", key: "problemSaved", route: "/Problem" },
+    { title: "입사 후 포부 작성하기", key: "aspirationSaved", route: "/Aspiration" },
+  ]
 
   const loadSavedStates = async () => {
     const updatedSections: SectionState[] = await Promise.all(
       sectionItems.map(async (item) => {
-        const saved = await SecureStore.getItemAsync(item.key);
-        const isActive = saved === 'true';
+        const saved = await SecureStore.getItemAsync(item.key)
+        const isActive = saved === "true"
         return {
           title: item.title,
           active: isActive,
-          iconType: isActive ? 'check' : 'arrow',
+          iconType: isActive ? "check" : "arrow",
           route: item.route,
-        } satisfies SectionState;
-      })
-    );
-    setSectionsState(updatedSections);
-  };
+        } satisfies SectionState
+      }),
+    )
+    setSectionsState(updatedSections)
+  }
 
-  useFocusEffect(useCallback(() => {
-    loadSavedStates();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      loadSavedStates()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  )
 
   const handleFinalSubmit = async () => {
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
-      const jwtToken = await SecureStore.getItemAsync('jwt_token');
+      const jwtToken = await SecureStore.getItemAsync("jwt_token")
       if (!jwtToken) {
-        Alert.alert('오류', '로그인이 필요합니다.');
-        return;
+        Alert.alert("오류", "로그인이 필요합니다.")
+        return
       }
 
       const keys = [
-        { storeKey: 'growthContent', field: 'growth' },
-        { storeKey: 'supportContent', field: 'support' },
-        { storeKey: 'strengthContent', field: 'strength' },
-        { storeKey: 'experienceContent', field: 'experience' },
-        { storeKey: 'problemContent', field: 'problem' },
-        { storeKey: 'aspirationContent', field: 'aspiration' },
-      ];
+        { storeKey: "growthContent", field: "growth" },
+        { storeKey: "supportContent", field: "support" },
+        { storeKey: "strengthContent", field: "strength" },
+        { storeKey: "experienceContent", field: "experience" },
+        { storeKey: "problemContent", field: "problem" },
+        { storeKey: "aspirationContent", field: "aspiration" },
+      ]
 
-      const requestBody: Record<string, string> = {};
+      const requestBody: Record<string, string> = {}
       for (const { storeKey, field } of keys) {
-        const value = await SecureStore.getItemAsync(storeKey);
-        requestBody[field] = value || '';
+        const value = await SecureStore.getItemAsync(storeKey)
+        requestBody[field] = value || ""
       }
 
-      const response = await fetch(
-        'https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/cover-letter/final',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${jwtToken}`,
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+      const response = await fetch("http://3.34.53.204:8080/api/cover-letter/final", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+        body: JSON.stringify(requestBody),
+      })
 
       if (response.ok) {
-        Alert.alert('완료', '최종 저장이 완료되었습니다.');
-        setShowResetButton(true);
+        Alert.alert("완료", "최종 저장이 완료되었습니다.")
+        setShowResetButton(true)
       } else {
-        const errorText = await response.text();
-        console.error('저장 실패:', errorText);
-        Alert.alert('오류', '저장에 실패했습니다.');
+        const errorText = await response.text()
+        console.error("저장 실패:", errorText)
+        Alert.alert("오류", "저장에 실패했습니다.")
       }
     } catch (error) {
-      console.error('에러 발생:', error);
-      Alert.alert('에러', '예상치 못한 에러가 발생했습니다.');
+      console.error("에러 발생:", error)
+      Alert.alert("에러", "예상치 못한 에러가 발생했습니다.")
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleReset = async () => {
-    setIsResetting(true);
+    setIsResetting(true)
     try {
-      const jwtToken = await SecureStore.getItemAsync('jwt_token');
+      const jwtToken = await SecureStore.getItemAsync("jwt_token")
       if (!jwtToken) {
-        Alert.alert('오류', '로그인이 필요합니다.');
-        return;
+        Alert.alert("오류", "로그인이 필요합니다.")
+        return
       }
 
-      const response = await fetch(
-        'https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/cover-letter/reset',
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-          },
-        }
-      );
+      const response = await fetch("http://3.34.53.204:8080/api/cover-letter/reset", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      })
 
       if (response.ok) {
         for (const item of sectionItems) {
-          await SecureStore.setItemAsync(item.key, 'false');
+          await SecureStore.setItemAsync(item.key, "false")
         }
 
         const resetSections: SectionState[] = sectionItems.map((item) => ({
           title: item.title,
           active: false,
-          iconType: 'arrow',
+          iconType: "arrow",
           route: item.route,
-        }));
+        }))
 
-        setSectionsState(resetSections);
-        setShowResetButton(false);
-        Alert.alert('초기화 완료', '데이터가 초기화되었습니다.');
+        setSectionsState(resetSections)
+        setShowResetButton(false)
+        Alert.alert("초기화 완료", "데이터가 초기화되었습니다.")
       } else {
-        Alert.alert('오류', '초기화에 실패했습니다.');
+        Alert.alert("오류", "초기화에 실패했습니다.")
       }
     } catch (error) {
-      console.error('초기화 중 에러:', error);
-      Alert.alert('에러', '초기화 중 문제가 발생했습니다.');
+      console.error("초기화 중 에러:", error)
+      Alert.alert("에러", "초기화 중 문제가 발생했습니다.")
     } finally {
-      setIsResetting(false);
+      setIsResetting(false)
     }
-  };
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>자소서 작성</Text>
 
       {sectionsState.map(({ title, active, iconType, route }, index) => (
-        <View
-          key={index}
-          style={[styles.sectionButton, active ? styles.activeButton : styles.inactiveButton]}
-        >
+        <View key={index} style={[styles.sectionButton, active ? styles.activeButton : styles.inactiveButton]}>
           <View style={styles.sectionTextContainer}>
             <Text style={styles.sectionText}>{title}</Text>
           </View>
-          <TouchableOpacity
-            onPress={() => router.push({ pathname: route })}
-            style={styles.iconContainer}
-          >
+          <TouchableOpacity onPress={() => router.push({ pathname: route })} style={styles.iconContainer}>
             <Image source={icons[iconType]} style={styles.iconImage} resizeMode="contain" />
           </TouchableOpacity>
         </View>
@@ -228,20 +223,12 @@ export default function HomeScreen() {
       {sectionsState.every((section) => section.active) ? (
         !showResetButton ? (
           <Pressable style={styles.resultButton} onPress={handleFinalSubmit} disabled={isSubmitting}>
-            {isSubmitting ? (
-              <ActivityIndicator color="#FFF" />
-            ) : (
-              <Text style={styles.resultButtonText}>최종 저장</Text>
-            )}
+            {isSubmitting ? <ActivityIndicator color="#FFF" /> : <Text style={styles.resultButtonText}>최종 저장</Text>}
           </Pressable>
         ) : (
-          <>
+          <View style={styles.buttonRow}>
             <Pressable style={styles.resetButton} onPress={handleReset} disabled={isResetting}>
-              {isResetting ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <Text style={styles.resetText}>초기화</Text>
-              )}
+              {isResetting ? <ActivityIndicator color="#FFF" /> : <Text style={styles.resetText}>초기화</Text>}
             </Pressable>
 
             <Pressable style={styles.resultButtonAfter} onPress={handleFinalSubmit} disabled={isSubmitting}>
@@ -251,209 +238,215 @@ export default function HomeScreen() {
                 <Text style={styles.resultTextAfter}>최종 저장</Text>
               )}
             </Pressable>
-          </>
+          </View>
         )
       ) : null}
 
       <View style={styles.bottomBar}>
-  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-    {bottomNavItems.map((item, index) => {
-      const isActive = index === activeNavIndex;
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {bottomNavItems.map((item, index) => {
+            const isActive = index === activeNavIndex
 
-      const handleNavPress = () => {
-        setActiveNavIndex(index);
-        if (item.route) router.push(item.route as any);
-      };
+            const handleNavPress = () => {
+              setActiveNavIndex(index)
+              if (item.route) router.push(item.route as any)
+            }
 
-      return (
-        <TouchableOpacity key={index} onPress={handleNavPress}>
-          <View style={styles.navItemWrapper}>
-            <View style={[styles.iconWrapper, isActive && styles.activeIconWrapper]}>
-              <Image
-                source={item.icon}
-                style={[
-                  styles.navIconImage,
-                  { tintColor: isActive ? '#0077FF' : '#000000' }, // ✅ 핵심 변경
-                ]}
-              />
-              {item.badge && <View style={styles.badgeBox} />}
-            </View>
-            <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
-              {item.text}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      );
-    })}
-  </ScrollView>
-</View>
+            return (
+              <TouchableOpacity key={index} onPress={handleNavPress}>
+                <View style={styles.navItemWrapper}>
+                  <View style={[styles.iconWrapper, isActive && styles.activeIconWrapper]}>
+                    <Image
+                      source={item.icon}
+                      style={[styles.navIconImage, { tintColor: isActive ? "#0077FF" : "#000000" }]}
+                    />
+                    {item.badge && <View style={styles.badgeBox} />}
+                  </View>
+                  <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{item.text}</Text>
+                </View>
+              </TouchableOpacity>
+            )
+          })}
+        </ScrollView>
+      </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: 445,
-    height: 917,
-    backgroundColor: '#FFFFFF',
-    paddingTop: 60,
-    paddingHorizontal: 46,
+    width: screenWidth,
+    height: screenHeight,
+    backgroundColor: "#FFFFFF",
+    paddingTop: screenHeight * 0.065, // ~60px on 917px screen
+    paddingHorizontal: screenWidth * 0.103, // ~46px on 445px screen
   },
   title: {
-    fontFamily: 'Inter',
-    fontWeight: '900',
-    fontSize: 28,
-    lineHeight: 30,
-    textAlign: 'center',
-    marginBottom: 60,
-    color: '#000000',
+    fontFamily: "Inter",
+    fontWeight: "900",
+    fontSize: screenWidth * 0.063, // ~28px on 445px screen
+    lineHeight: screenWidth * 0.067, // ~30px on 445px screen
+    textAlign: "center",
+    marginBottom: screenHeight * 0.065, // ~60px on 917px screen
+    color: "#000000",
   },
   sectionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 66,
-    borderRadius: 16,
-    marginBottom: 20,
-    paddingHorizontal: 20,
-    shadowColor: '#000',
+    flexDirection: "row",
+    alignItems: "center",
+    height: screenHeight * 0.072, // ~66px on 917px screen
+    borderRadius: screenWidth * 0.036, // ~16px on 445px screen
+    marginBottom: screenHeight * 0.022, // ~20px on 917px screen
+    paddingHorizontal: screenWidth * 0.045, // ~20px on 445px screen
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
   },
-  activeButton: { backgroundColor: '#38BA47' },
-  inactiveButton: { backgroundColor: '#0077FF' },
-  sectionTextContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  sectionText: { color: '#FFFFFF', fontWeight: '900', fontSize: 18 },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+  activeButton: { backgroundColor: "#38BA47" },
+  inactiveButton: { backgroundColor: "#0077FF" },
+  sectionTextContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  sectionText: {
+    color: "#FFFFFF",
+    fontWeight: "900",
+    fontSize: screenWidth * 0.04, // ~18px on 445px screen
   },
-  iconImage: { width: 24, height: 24 },
+  iconContainer: {
+    width: screenWidth * 0.09, // ~40px on 445px screen
+    height: screenWidth * 0.09, // ~40px on 445px screen
+    borderRadius: screenWidth * 0.027, // ~12px on 445px screen
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  iconImage: {
+    width: screenWidth * 0.054, // ~24px on 445px screen
+    height: screenWidth * 0.054, // ~24px on 445px screen
+  },
   resultButton: {
-    marginTop: 24,
-    height: 48,
-    backgroundColor: '#0348DB',
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
+    marginTop: screenHeight * 0.026, // ~24px on 917px screen
+    height: screenHeight * 0.052, // ~48px on 917px screen
+    backgroundColor: "#0348DB",
+    borderRadius: screenWidth * 0.022, // ~10px on 445px screen
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
   },
-  resultButtonText: { color: '#FFFFFF', fontWeight: '900', fontSize: 18 },
+  resultButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "900",
+    fontSize: screenWidth * 0.04, // ~18px on 445px screen
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: screenHeight * 0.026, // ~24px on 917px screen
+    gap: screenWidth * 0.022, // ~10px gap between buttons
+  },
   resetButton: {
-    position: 'absolute',
-    width: 165,
-    height: 54,
-    left: 46,
-    top: 678,
-    backgroundColor: '#C21010',
-    borderRadius: 10.76,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000000',
+    flex: 1,
+    height: screenHeight * 0.059, // ~54px on 917px screen
+    backgroundColor: "#C21010",
+    borderRadius: screenWidth * 0.024, // ~10.76px on 445px screen
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
   },
   resetText: {
-    fontFamily: 'Inter',
-    fontWeight: '900',
-    fontSize: 20,
-    lineHeight: 24,
-    color: '#FFFFFF',
-    textAlign: 'center',
+    fontFamily: "Inter",
+    fontWeight: "900",
+    fontSize: screenWidth * 0.045, // ~20px on 445px screen
+    lineHeight: screenWidth * 0.054, // ~24px on 445px screen
+    color: "#FFFFFF",
+    textAlign: "center",
   },
   resultButtonAfter: {
-    position: 'absolute',
-    width: 165,
-    height: 54,
-    left: 236,
-    top: 678,
-    backgroundColor: '#0348DB',
-    borderRadius: 10.76,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000000',
+    flex: 1,
+    height: screenHeight * 0.059, // ~54px on 917px screen
+    backgroundColor: "#0348DB",
+    borderRadius: screenWidth * 0.024, // ~10.76px on 445px screen
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
   },
   resultTextAfter: {
-    fontFamily: 'Inter',
-    fontWeight: '900',
-    fontSize: 20,
-    lineHeight: 24,
-    color: '#FFFFFF',
-    textAlign: 'center',
+    fontFamily: "Inter",
+    fontWeight: "900",
+    fontSize: screenWidth * 0.045, // ~20px on 445px screen
+    lineHeight: screenWidth * 0.054, // ~24px on 445px screen
+    color: "#FFFFFF",
+    textAlign: "center",
   },
   bottomBar: {
-    position: 'absolute',
-    left: 4,
+    position: "absolute",
+    left: 0,
     right: 0,
-    top: 903,
-    height: 90,
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    shadowColor: '#000',
+    bottom: 0,
+    height: screenHeight * 0.098, // ~90px on 917px screen
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: screenWidth * 0.045, // ~20px on 445px screen
+    borderTopRightRadius: screenWidth * 0.045, // ~20px on 445px screen
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: -5 },
     shadowOpacity: 0.09,
     shadowRadius: 6.5,
   },
   navItemWrapper: {
-    left: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 80,
-    paddingHorizontal: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    width: screenWidth * 0.18, // ~80px on 445px screen
+    paddingHorizontal: screenWidth * 0.022, // ~10px on 445px screen
+    marginLeft: screenWidth * 0.015, // ~20px on 445px screen
   },
   iconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: screenWidth * 0.108, // ~48px on 445px screen
+    height: screenWidth * 0.108, // ~48px on 445px screen
+    borderRadius: screenWidth * 0.054, // ~24px on 445px screen
+    justifyContent: "center",
+    alignItems: "center",
   },
   activeIconWrapper: {
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: "#FFFFFF",
   },
   navIconImage: {
-    width: 30,
-    height: 30,
-    resizeMode: 'contain',
+    width: screenWidth * 0.067, // ~30px on 445px screen
+    height: screenWidth * 0.067, // ~30px on 445px screen
+    resizeMode: "contain",
     marginBottom: 4,
   },
   navLabel: {
-    fontFamily: 'Inter',
-    fontSize: 14.66,
-    fontWeight: '900',
-    color: '#000000',
-    textAlign: 'center',
+    fontFamily: "Inter",
+    fontSize: screenWidth * 0.033, // ~14.66px on 445px screen
+    fontWeight: "900",
+    color: "#000000",
+    textAlign: "center",
   },
   navLabelActive: {
-    color: '#0077FF',
+    color: "#0077FF",
   },
   badgeBox: {
-    position: 'absolute',
+    position: "absolute",
     top: -2,
     right: -2,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    shadowColor: '#000000',
+    width: screenWidth * 0.022, // ~10px on 445px screen
+    height: screenWidth * 0.022, // ~10px on 445px screen
+    borderRadius: screenWidth * 0.011, // ~5px on 445px screen
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 1,
   },
-});
+})

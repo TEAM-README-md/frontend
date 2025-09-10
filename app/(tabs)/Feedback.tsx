@@ -23,7 +23,7 @@ export default function Feedback() {
   const fetchFeedback = async () => {
     try {
       const response = await fetch(
-        "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/intro",
+        "http://3.34.53.204:8080/api/intro",
         {
           method: "POST",
           headers: {

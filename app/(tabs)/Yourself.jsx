@@ -29,7 +29,7 @@ export default function Yourself() {
 
     try {
       const response = await fetch(
-        "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/intro",
+        "http://3.34.53.204:8080/api/intro",
         {
           method: "POST",
           headers: {
@@ -52,6 +52,7 @@ export default function Yourself() {
       } else {
         Alert.alert("오류", data?.message || "제출에 실패했습니다.");
       }
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       Alert.alert("오류", "서버와 연결할 수 없습니다.");
     } finally {

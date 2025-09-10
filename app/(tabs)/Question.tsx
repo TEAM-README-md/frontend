@@ -87,7 +87,7 @@ export default function Question() {
       const allQuestions: InterviewQuestion[] = []
 
       const res1 = await fetch(
-        "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/interview/cover-letter/questions",
+        "http://3.34.53.204:8080/api/interview/cover-letter/questions",
         { method: "GET", headers }
       )
       const text1 = await res1.text()
@@ -108,7 +108,7 @@ export default function Question() {
       for (let i = 0; i < questionCount; i++) {
         const chapter = chapters[i % chapters.length]
         const res = await fetch(
-          "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/interview/survey/questions",
+          "http://3.34.53.204:8080/api/interview/survey/questions",
           {
             method: "POST",
             headers,
@@ -150,7 +150,7 @@ export default function Question() {
     try {
       const headers = createHeaders()
       const res = await fetch(
-        "https://port-0-readme-backend-mc3irwlrc1cd1728.sel5.cloudtype.app/api/interview/feedback",
+        "http://3.34.53.204:8080/api/interview/feedback",
         {
           method: "POST",
           headers,
